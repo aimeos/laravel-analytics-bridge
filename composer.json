@@ -1,0 +1,27 @@
+{
+  "name": "aimeos/laravel-analytics-bridge",
+  "description": "Unified analytics bridge for Laravel",
+  "type": "library",
+  "license": "LGPL-2.1+",
+  "autoload": {
+    "psr-4": {
+      "Aimeos\\AnalyticsBridge\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "illuminate/support": "^10.0",
+    "guzzlehttp/guzzle": "^7.0",
+    "aimeos/laravel-analytics-driver": "*"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Aimeos\\AnalyticsBridge\\ServiceProvider"
+      ],
+      "aliases": {
+        "Analytics": "Aimeos\\AnalyticsBridge\\Facades\\Analytics"
+      }
+    }
+  }
+}
