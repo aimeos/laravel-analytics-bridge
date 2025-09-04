@@ -11,7 +11,7 @@ class Manager
     protected Driver $driver;
 
 
-    public function driver(string $name = null): Driver
+    public function driver(string $name = null, array $config = []): Driver
     {
         if (!isset($this->driver))
         {
@@ -22,7 +22,9 @@ class Manager
                 throw new InvalidArgumentException("Driver [$name] not found");
             }
 
-            $this->driver = new $class(config('analytics-bridge.drivers.' . $name, []));
+            $config = array_replace(config('analytics-bridge.drivers.' . $name, []), $config);
+
+            $this->driver = new $class($config);
         }
 
         return $this->driver;
