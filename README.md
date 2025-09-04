@@ -48,10 +48,6 @@ return [
             'token' => env('ANALYTICS_MATOMO_TOKEN'),
         ],
     ],
-
-    'pagespeed' => [
-        'api_key' => env('PAGESPEED_API_KEY'),
-    ],
 ];
 ```
 
@@ -108,35 +104,10 @@ Each returns total counts over timeframe:
 ]
 ```
 
-### Performance (Web Vitals)
-
-```php
-$performance = Analytics::performance('https://aimeos.org/features');
-```
-
-Returns:
-
-```php
-[
-    // Time to first byte in milliseconds
-    'ttfb' => ['value' => 200, 'category' => 'FAST'],
-    // First contentful paint in milliseconds
-    'fcp'  => ['value' => 1200, 'category' => 'FAST'],
-    // Largest contentful paint in milliseconds
-    'lcp'  => ['value' => 1800, 'category' => 'FAST'],
-    // First input delay in milliseconds
-    'fid'  => ['value' => 20, 'category' => 'FAST'],
-    // Cumulative layout shift score value
-    'cls'  => ['value' => 0.05, 'category' => 'FAST'],
-]
-```
-
-Values are in milliseconds (except CLS, which is a score value).
-
 ### Combined Fetch
 
 ```php
-$data = Analytics::fetch('https://aimeos.org/features', 30);
+$data = Analytics::all('https://aimeos.org/features', 30);
 ```
 
 Returns:
@@ -148,7 +119,6 @@ Returns:
     'visitDuration' => [/* ... */],
     'countries'     => [/* ... */],
     'referrers'     => [/* ... */],
-    'performance'   => [/* ... */],
 ]
 ```
 

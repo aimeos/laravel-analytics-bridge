@@ -10,8 +10,4 @@ return [
             'siteid' => env('MATOMO_SITEID'),
         ]
     ],
-
-    'pagespeed' => [
-        'apikey' => env('PAGESPEED_APIKEY', ''),
-    ],
 ];

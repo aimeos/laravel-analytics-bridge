@@ -4,9 +4,10 @@ namespace Aimeos\AnalyticsBridge\Contracts;
 
 interface Driver
 {
-    public function pageViews(string $path, int $days = 30): array;
-    public function visits(string $path, int $days = 30): array;
-    public function visitDurations(string $path, int $days = 30): array;
-    public function countries(string $path, int $days = 30): array;
-    public function referrers(string $path, int $days = 30): array;
+    public function all(string $url, int $days = 30): array;
+    public function countries(string $url, int $days = 30): array;
+    public function referrers(string $url, int $days = 30): array;
+    public function pageViews(string $url, int $days = 30): array;
+    public function visitDurations(string $url, int $days = 30): array;
+    public function visits(string $url, int $days = 30): array;
 }
