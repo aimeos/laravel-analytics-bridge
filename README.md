@@ -16,10 +16,10 @@ A unified analytics bridge for Laravel providing a consistent API across multipl
 Install the driver package you need:
 
 ```bash
-# for Google Analytics
-composer require aimeos/laravel-analytics-google
 # for Matomo
 composer require aimeos/laravel-analytics-matomo
+# for Google Analytics
+composer require aimeos/laravel-analytics-google
 ```
 
 ## Configuration
@@ -65,13 +65,13 @@ use Aimeos\AnalyticsBridge\Facades\Analytics;
 
 ```php
 // Number of page views for the last 30 days
-$pageViews = Analytics::pageViews('/', 30);
+$views = Analytics::views('https://aimeos.org/features', 30);
 
 // Number of visits for the last 30 days
-$visits = Analytics::visits('/', 30);
+$visits = Analytics::visits('https://aimeos.org/features', 30);
 
 // Average visit duration (seconds) per day
-$durations = Analytics::visitDurations('/', 30);
+$durations = Analytics::$durations('https://aimeos.org/features', 30);
 ```
 
 Each returns arrays with one entry per day:
@@ -88,10 +88,10 @@ Each returns arrays with one entry per day:
 
 ```php
 // Top countries by visit count
-$countries = Analytics::countries('/', 30);
+$countries = Analytics::countries('https://aimeos.org/features', 30);
 
 // Top referrers by visit count
-$referrers = Analytics::referrers('/', 30);
+$referrers = Analytics::referrers('https://aimeos.org/features', 30);
 ```
 
 Each returns total counts over timeframe:
@@ -100,6 +100,12 @@ Each returns total counts over timeframe:
 [
     ['key' => 'Germany', 'value' => 321],
     ['key' => 'USA', 'value' => 244],
+    ...
+]
+// or
+[
+    ['key' => 'https://aimeos.org/', 'value' => 321],
+    ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
     ...
 ]
 ```
@@ -114,11 +120,32 @@ Returns:
 
 ```php
 [
-    'pageViews'     => [/* ... */],
-    'visits'        => [/* ... */],
-    'visitDuration' => [/* ... */],
-    'countries'     => [/* ... */],
-    'referrers'     => [/* ... */],
+    'views'     => [/*...*/],
+    'visits'    => [/*...*/],
+    'durations' => [/*...*/],
+    'countries' => [/*...*/],
+    'referrers' => [/*...*/],
+]
+```
+
+### PageSpeed Metrics
+
+
+```php
+$data = Analytics::pagespeed('https://aimeos.org/features');
+```
+
+Returns:
+
+```php
+[
+    ['round_trip_time' => 150],
+    ['time_to_first_byte' => 700],
+    ['first_contentful_paint' => 1200],
+    ['largest_contentful_paint' => 1700],
+    ['interaction_to_next_paint' => 180],
+    ['cumulative_layout_shift' => 0.05],
+    /*...*/
 ]
 ```
 
@@ -126,7 +153,7 @@ Returns:
 
 For a new analyics service (e.g. Foobar), create a new composer package, e.g.
 `yourorg/laravel-analytics-foobar`. Replace every occurrence of "yourorg" and
-"foobar" with own vendor name and resp. the service name.
+"foobar" (in any case) with own vendor name and resp. the service name.
 
 Use this `composer.json` as template:
 
@@ -168,29 +195,46 @@ class Foobar implements Driver
         // $config from ./config/analytics-bridge.php
     }
 
-    public function pageViews(string $path, int $days = 30): array
+    public function all(string $path, int $days = 30): ?array
     {
-        return [];
+        // or NULL if not available
+        return [
+            'views'     => [['key' => '2025-08-01', 'value' => 123], /*...*/],
+            'visits'    => [['key' => '2025-08-01', 'value' => 123], /*...*/],
+            'durations' => [['key' => '2025-08-01', 'value' => 123], /*...*/],
+            'countries' => [['key' => 'Germany', 'value' => 321], /*...*/],
+            'referrers' => [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/],
+        ];
     }
 
-    public function visits(string $path, int $days = 30): array
+    public function views(string $path, int $days = 30): ?array
     {
-        return [];
+        // or NULL if not available
+        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
     }
 
-    public function visitDurations(string $path, int $days = 30): array
+    public function visits(string $path, int $days = 30): ?array
     {
-        return [];
+        // or NULL if not available
+        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
     }
 
-    public function countries(string $path, int $days = 30): array
+    public function durations(string $path, int $days = 30): ?array
     {
-        return [];
+        // or NULL if not available
+        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
     }
 
-    public function referrers(string $path, int $days = 30): array
+    public function countries(string $path, int $days = 30): ?array
     {
-        return [];
+        // or NULL if not available
+        return [['key' => 'Germany', 'value' => 321], /*...*/];
+    }
+
+    public function referrers(string $path, int $days = 30): ?array
+    {
+        // or NULL if not available
+        return [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/];
     }
 }
 ```
