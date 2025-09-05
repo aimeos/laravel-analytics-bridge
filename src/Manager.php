@@ -6,7 +6,7 @@ use Aimeos\AnalyticsBridge\Contracts\Driver;
 use InvalidArgumentException;
 
 
-class Manager
+class Manager implements Driver
 {
     protected Driver $driver;
 
@@ -31,37 +31,37 @@ class Manager
     }
 
 
-    public function all(string $url, int $days = 30): array
+    public function all(string $url, int $days = 30): ?array
     {
         return $this->driver()->all($url, $days);
     }
 
 
-    public function pageViews(string $url, int $days = 30): array
+    public function views(string $url, int $days = 30): ?array
     {
-        return $this->driver()->pageViews($url, $days);
+        return $this->driver()->views($url, $days);
     }
 
 
-    public function visits(string $url, int $days = 30): array
+    public function visits(string $url, int $days = 30): ?array
     {
         return $this->driver()->visits($url, $days);
     }
 
 
-    public function visitDurations(string $url, int $days = 30): array
+    public function durations(string $url, int $days = 30): ?array
     {
-        return $this->driver()->visitDurations($url, $days);
+        return $this->driver()->durations($url, $days);
     }
 
 
-    public function countries(string $url, int $days = 30): array
+    public function countries(string $url, int $days = 30): ?array
     {
         return $this->driver()->countries($url, $days);
     }
 
 
-    public function referrers(string $url, int $days = 30): array
+    public function referrers(string $url, int $days = 30): ?array
     {
         return $this->driver()->referrers($url, $days);
     }
