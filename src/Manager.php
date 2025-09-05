@@ -3,7 +3,7 @@
 namespace Aimeos\AnalyticsBridge;
 
 use Aimeos\AnalyticsBridge\Contracts\Driver;
-use InvalidArgumentException;
+use Illuminate\Support\Facades\Http;
 
 
 class Manager implements Driver
@@ -64,5 +64,42 @@ class Manager implements Driver
     public function referrers(string $url, int $days = 30): ?array
     {
         return $this->driver()->referrers($url, $days);
+    }
+
+
+    public function pagespeed(string $url, array $config = []): ?array
+    {
+        if (!$url) {
+            throw new \InvalidArgumentException('URL must be a non-empty string');
+        }
+
+        $config   = array_replace(config('analytics-bridge.crux', []), $config);
+
+        if (!isset($config['apikey'])) {
+            return null;
+        }
+
+        $payload = ['url' => $url];
+
+        if (isset($config['formFactor'])) {
+            $payload['formFactor'] = $config['formFactor'];
+        }
+
+        $endpoint = 'https://chromeuxreport.googleapis.com/v1/records:queryRecord';
+        $response = Http::post($endpoint . '?key=' . $config['apikey'], $payload);
+
+        if ($response->failed()) {
+            throw new \RuntimeException('Failed to fetch CrUX data: ' . $response->body());
+        }
+
+        $metrics = data_get($response->json(), 'record.metrics', []);
+
+        return collect($metrics)
+            ->map(fn($item, $key) => [
+                'key' => !strncmp($key, 'experimental_', 13) ? substr($key, 13) : $key,
+                'value' => $item['percentiles']['p75'] ?? null
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -10,4 +10,8 @@ return [
             'siteid' => env('MATOMO_SITEID'),
         ]
     ],
+
+    'crux' => [
+        'apikey' => env('CRUX_APIKEY'),
+    ],
 ];
