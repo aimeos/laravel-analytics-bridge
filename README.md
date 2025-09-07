@@ -38,16 +38,20 @@ return [
 
     'drivers' => [
         'google' => [
-            'property_id' => env('ANALYTICS_GOOGLE_PROPERTY_ID'),
+            'propertyid' => env('GOOGLE_PROPERTYID'),
             'credentials' => storage_path('app/analytics/google.json'),
         ],
 
         'matomo' => [
-            'url' => env('ANALYTICS_MATOMO_URL'),
-            'site_id' => env('ANALYTICS_MATOMO_SITE_ID'),
-            'token' => env('ANALYTICS_MATOMO_TOKEN'),
+            'url' => env('MATOMO_URL'),
+            'token' => env('MATOMO_TOKEN'),
+            'siteid' => env('MATOMO_SITEID'),
         ],
     ],
+
+    'crux' => [
+        'apikey' => env('CRUX_APIKEY')
+    ]
 ];
 ```
 
@@ -61,70 +65,52 @@ Import the facade:
 use Aimeos\AnalyticsBridge\Facades\Analytics;
 ```
 
-### Page Time Series
+### Page Statistics
+
+Available are:
+
+* views
+* visits
+* durations
+* countries
+* referrers
 
 ```php
-// Number of page views for the last 30 days
-$views = Analytics::views('https://aimeos.org/features', 30);
+$result = Analytics::stats('https://aimeos.org/features', 30);
 
-// Number of visits for the last 30 days
-$visits = Analytics::visits('https://aimeos.org/features', 30);
-
-// Average visit duration (seconds) per day
-$durations = Analytics::$durations('https://aimeos.org/features', 30);
+// to limit the result set
+$result = Analytics::stats('https://aimeos.org/features', 30, ['visits', 'referrers']);
 ```
 
-Each returns arrays with one entry per day:
+It returns arrays with one entry per day, country or URL:
 
 ```php
 [
-    ['key' => '2025-08-01', 'value' => 123],
-    ['key' => '2025-08-02', 'value' => 97],
-    ...
-]
-```
-
-### Top Aggregates
-
-```php
-// Top countries by visit count
-$countries = Analytics::countries('https://aimeos.org/features', 30);
-
-// Top referrers by visit count
-$referrers = Analytics::referrers('https://aimeos.org/features', 30);
-```
-
-Each returns total counts over timeframe:
-
-```php
-[
-    ['key' => 'Germany', 'value' => 321],
-    ['key' => 'USA', 'value' => 244],
-    ...
-]
-// or
-[
-    ['key' => 'https://aimeos.org/', 'value' => 321],
-    ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
-    ...
-]
-```
-
-### Combined Fetch
-
-```php
-$data = Analytics::all('https://aimeos.org/features', 30);
-```
-
-Returns:
-
-```php
-[
-    'views'     => [/*...*/],
-    'visits'    => [/*...*/],
-    'durations' => [/*...*/],
-    'countries' => [/*...*/],
-    'referrers' => [/*...*/],
+    'views'     => [
+        ['key' => '2025-08-01', 'value' => 123],
+        ['key' => '2025-08-02', 'value' => 97],
+        ...
+    ],
+    'visits'    => [
+        ['key' => '2025-08-01', 'value' => 53],
+        ['key' => '2025-08-02', 'value' => 40],
+        ...
+    ],
+    'durations' => [ // in seconds
+        ['key' => '2025-08-01', 'value' => 75],
+        ['key' => '2025-08-02', 'value' => 80],
+        ...
+    ],
+    'countries' => [
+        ['key' => 'Germany', 'value' => 321],
+        ['key' => 'USA', 'value' => 244],
+        ...
+    ],
+    'referrers' => [
+        ['key' => 'https://aimeos.org/', 'value' => 321],
+        ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
+        ...
+    ],
 ]
 ```
 
@@ -195,9 +181,9 @@ class Foobar implements Driver
         // $config from ./config/analytics-bridge.php
     }
 
-    public function all(string $path, int $days = 30): ?array
+    public function stats(string $path, int $days = 30, array $types = []): ?array
     {
-        // or NULL if not available
+        // limited by types if requested, or NULL if not available
         return [
             'views'     => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'visits'    => [['key' => '2025-08-01', 'value' => 123], /*...*/],
@@ -205,36 +191,6 @@ class Foobar implements Driver
             'countries' => [['key' => 'Germany', 'value' => 321], /*...*/],
             'referrers' => [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/],
         ];
-    }
-
-    public function views(string $path, int $days = 30): ?array
-    {
-        // or NULL if not available
-        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
-    }
-
-    public function visits(string $path, int $days = 30): ?array
-    {
-        // or NULL if not available
-        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
-    }
-
-    public function durations(string $path, int $days = 30): ?array
-    {
-        // or NULL if not available
-        return [['key' => '2025-08-01', 'value' => 123], /*...*/];
-    }
-
-    public function countries(string $path, int $days = 30): ?array
-    {
-        // or NULL if not available
-        return [['key' => 'Germany', 'value' => 321], /*...*/];
-    }
-
-    public function referrers(string $path, int $days = 30): ?array
-    {
-        // or NULL if not available
-        return [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/];
     }
 }
 ```

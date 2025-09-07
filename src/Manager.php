@@ -31,39 +31,9 @@ class Manager implements Driver
     }
 
 
-    public function all(string $url, int $days = 30): ?array
+    public function stats(string $url, int $days = 30, array $types = []): ?array
     {
-        return $this->driver()->all($url, $days);
-    }
-
-
-    public function views(string $url, int $days = 30): ?array
-    {
-        return $this->driver()->views($url, $days);
-    }
-
-
-    public function visits(string $url, int $days = 30): ?array
-    {
-        return $this->driver()->visits($url, $days);
-    }
-
-
-    public function durations(string $url, int $days = 30): ?array
-    {
-        return $this->driver()->durations($url, $days);
-    }
-
-
-    public function countries(string $url, int $days = 30): ?array
-    {
-        return $this->driver()->countries($url, $days);
-    }
-
-
-    public function referrers(string $url, int $days = 30): ?array
-    {
-        return $this->driver()->referrers($url, $days);
+        return $this->driver()->stats($url, $days, $types);
     }
 
 
