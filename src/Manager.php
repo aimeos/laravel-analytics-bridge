@@ -94,12 +94,13 @@ class Manager implements Driver
         $siteUrl .= '/';
 
         $client = new Client();
-        $client->setAuthConfig($config['auth']);
+        $client->setAuthConfig(json_decode($config['auth'], true));
         $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
 
         $service = new SearchConsole($client);
         $request = new SearchConsole\SearchAnalyticsQueryRequest([
             'startDate' => now()->subDays($days)->toDateString(),
+            'endDate' => now()->toDateString(),
             'dimensions' => ['date'],
             'dimensionFilterGroups' => [[
                 'groupType' => 'and',
@@ -107,11 +108,10 @@ class Manager implements Driver
                     [
                         'dimension' => 'page',
                         'operator' => 'equals',
-                        'expression' => $pageUrl,
+                        'expression' => $url,
                     ]
                 ]
             ]],
-            'rowLimit' => 1
         ]);
 
         $response = $service->searchanalytics->query($siteUrl, $request);
@@ -146,12 +146,13 @@ class Manager implements Driver
         $siteUrl .= '/';
 
         $client = new Client();
-        $client->setAuthConfig($config['auth']);
+        $client->setAuthConfig(json_decode($config['auth'], true));
         $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
 
         $service = new SearchConsole($client);
         $request = new SearchConsole\SearchAnalyticsQueryRequest([
             'startDate' => now()->subDays($days)->toDateString(),
+            'endDate' => now()->toDateString(),
             'dimensions' => ['query'], // Top queries
             'dimensionFilterGroups' => [[
                 'groupType' => 'and',
@@ -159,7 +160,7 @@ class Manager implements Driver
                     [
                         'dimension' => 'page',
                         'operator' => 'equals',
-                        'expression' => $pageUrl,
+                        'expression' => $url,
                     ]
                 ]
             ]],
