@@ -119,9 +119,9 @@ class Manager implements Driver
 
         foreach ($response->getRows() as $row) {
             $key = $row->getKeys()[0];
-            $data['gsc_impressions'][] = ['key' => $key, 'value' => $row->getImpressions()];
-            $data['gsc_clicks'][] = ['key' => $key, 'value' => $row->getClicks()];
-            $data['gsc_ctrs'][] = ['key' => $key, 'value' => $row->getCtr()];
+            $data['impressions'][] = ['key' => $key, 'value' => $row->getImpressions()];
+            $data['clicks'][] = ['key' => $key, 'value' => $row->getClicks()];
+            $data['ctrs'][] = ['key' => $key, 'value' => $row->getCtr()];
         }
 
         return $data;
@@ -171,8 +171,8 @@ class Manager implements Driver
         $data = [];
 
         foreach ($response->getRows() as $row) {
-            $data['gsc_queries'][] = [
-                'query' => $row->getKeys()[0],
+            $data[] = [
+                'key' => $row->getKeys()[0],
                 'impressions' => $row->getImpressions(),
                 'clicks' => $row->getClicks(),
                 'ctr' => $row->getCtr(),
