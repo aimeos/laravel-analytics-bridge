@@ -4,6 +4,8 @@ namespace Aimeos\AnalyticsBridge;
 
 use Aimeos\AnalyticsBridge\Contracts\Driver;
 use Illuminate\Support\Facades\Http;
+use Google\Service\SearchConsole;
+use Google\Client;
 
 
 class Manager implements Driver
@@ -43,7 +45,7 @@ class Manager implements Driver
             throw new \InvalidArgumentException('URL must be a non-empty string');
         }
 
-        $config   = array_replace(config('analytics-bridge.crux', []), $config);
+        $config = array_replace(config('analytics-bridge.crux', []), $config);
 
         if (!isset($config['apikey'])) {
             return null;
@@ -71,5 +73,112 @@ class Manager implements Driver
             ])
             ->values()
             ->all();
+    }
+
+
+    public function search(string $url, int $days = 30, array $config = []): ?array
+    {
+        if (!$url) {
+            throw new \InvalidArgumentException('URL must be a non-empty string');
+        }
+
+        $config = array_replace(config('analytics-bridge.gsc', []), $config);
+
+        if (!isset($config['auth'])) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
+        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
+        $siteUrl .= '/';
+
+        $client = new Client();
+        $client->setAuthConfig($config['auth']);
+        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
+
+        $service = new SearchConsole($client);
+        $request = new SearchConsole\SearchAnalyticsQueryRequest([
+            'startDate' => now()->subDays($days)->toDateString(),
+            'dimensions' => ['date'],
+            'dimensionFilterGroups' => [[
+                'groupType' => 'and',
+                'filters' => [
+                    [
+                        'dimension' => 'page',
+                        'operator' => 'equals',
+                        'expression' => $pageUrl,
+                    ]
+                ]
+            ]],
+            'rowLimit' => 1
+        ]);
+
+        $response = $service->searchanalytics->query($siteUrl, $request);
+        $data = [];
+
+        foreach ($response->getRows() as $row) {
+            $key = $row->getKeys()[0];
+            $data['gsc_impressions'][] = ['key' => $key, 'value' => $row->getImpressions()];
+            $data['gsc_clicks'][] = ['key' => $key, 'value' => $row->getClicks()];
+            $data['gsc_ctrs'][] = ['key' => $key, 'value' => $row->getCtr()];
+        }
+
+        return $data;
+    }
+
+
+    public function queries(string $url, int $days = 30, array $config = []): ?array
+    {
+        if (!$url) {
+            throw new \InvalidArgumentException('URL must be a non-empty string');
+        }
+
+        $config = array_replace(config('analytics-bridge.gsc', []), $config);
+
+        if (!isset($config['auth'])) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
+        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
+        $siteUrl .= '/';
+
+        $client = new Client();
+        $client->setAuthConfig($config['auth']);
+        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
+
+        $service = new SearchConsole($client);
+        $request = new SearchConsole\SearchAnalyticsQueryRequest([
+            'startDate' => now()->subDays($days)->toDateString(),
+            'dimensions' => ['query'], // Top queries
+            'dimensionFilterGroups' => [[
+                'groupType' => 'and',
+                'filters' => [
+                    [
+                        'dimension' => 'page',
+                        'operator' => 'equals',
+                        'expression' => $pageUrl,
+                    ]
+                ]
+            ]],
+            'rowLimit' => 100
+        ]);
+
+        $response = $service->searchanalytics->query($siteUrl, $request);
+        $data = [];
+
+        foreach ($response->getRows() as $row) {
+            $data['gsc_queries'][] = [
+                'query' => $row->getKeys()[0],
+                'impressions' => $row->getImpressions(),
+                'clicks' => $row->getClicks(),
+                'ctr' => $row->getCtr(),
+                'position' => $row->getPosition()
+            ];
+        }
+
+        return $data;
     }
 }

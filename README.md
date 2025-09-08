@@ -135,6 +135,52 @@ Returns:
 ]
 ```
 
+### Google Search Statistics
+
+
+```php
+$data = Analytics::search('https://aimeos.org/features');
+```
+
+Returns:
+
+```php
+[
+    'gsc_impressions' => [
+        ['key' => '2025-08-01', 'value' => 123],
+        ['key' => '2025-08-02', 'value' => 97],
+        ...
+    ],
+    'gsc_clicks' => [
+        ['key' => '2025-08-01', 'value' => 23],
+        ['key' => '2025-08-02', 'value' => 14],
+        ...
+    ],
+    'gsc_ctrs' => [ // click through rate (between 0 and 1)
+        ['key' => '2025-08-01', 'value' => 0.194],
+        ['key' => '2025-08-02', 'value' => 0.69],
+        ...
+    ],
+```
+
+### Google Search Queries
+
+
+```php
+$data = Analytics::queries('https://aimeos.org/features');
+```
+
+Returns:
+
+```php
+[
+    'gsc_queries' => [
+        ['query' => 'aimeos', 'impressions' => 1234, 'clicks' => 512, 'ctr' => 0.41, 'position' => 1.1],
+        ['query' => 'laravel ecommerce', 'impressions' => 2486, 'clicks' => 299, 'ctr' => 0.11, 'position' => 1.9],
+        ...
+    ],
+```
+
 ## Implemnt new Driver
 
 For a new analyics service (e.g. Foobar), create a new composer package, e.g.

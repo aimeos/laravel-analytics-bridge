@@ -14,4 +14,8 @@ return [
     'crux' => [
         'apikey' => env('CRUX_APIKEY'),
     ],
+
+    'gsc' => [
+        'auth' => base64_decode(env('GSC_AUTH', ''))
+    ]
 ];
