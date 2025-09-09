@@ -52,6 +52,10 @@ return [
     'crux' => [
         'apikey' => env('CRUX_APIKEY')
     ]
+
+    'gsc' => [
+        'auth' => base64_decode(json_decode(env('GSC_AUTH', '[]'), true))
+    ]
 ];
 ```
 

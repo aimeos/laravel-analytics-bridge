@@ -94,7 +94,7 @@ class Manager implements Driver
         $siteUrl .= '/';
 
         $client = new Client();
-        $client->setAuthConfig(json_decode($config['auth'], true));
+        $client->setAuthConfig($config['auth']);
         $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
 
         $service = new SearchConsole($client);
@@ -146,7 +146,7 @@ class Manager implements Driver
         $siteUrl .= '/';
 
         $client = new Client();
-        $client->setAuthConfig(json_decode($config['auth'], true));
+        $client->setAuthConfig($config['auth']);
         $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
 
         $service = new SearchConsole($client);
