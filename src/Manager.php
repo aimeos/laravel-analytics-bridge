@@ -97,7 +97,8 @@ class Manager implements Driver
         $client->setAuthConfig($config['auth']);
         $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
 
-        $request = new InspectUrlIndexRequest([
+        $service = new SearchConsole($client);
+        $request = new SearchConsole\InspectUrlIndexRequest([
             'languageCode' => $lang,
             'inspectionUrl' => $url,
             'siteUrl' => $siteUrl,

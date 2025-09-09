@@ -16,6 +16,6 @@ return [
     ],
 
     'gsc' => [
-        'auth' => base64_decode(env('GSC_AUTH', ''))
+        'auth' => json_decode(base64_decode(env('GSC_AUTH', '')), true)
     ]
 ];
