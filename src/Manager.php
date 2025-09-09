@@ -3,14 +3,24 @@
 namespace Aimeos\AnalyticsBridge;
 
 use Aimeos\AnalyticsBridge\Contracts\Driver;
-use Illuminate\Support\Facades\Http;
-use Google\Service\SearchConsole;
-use Google\Client;
 
 
 class Manager implements Driver
 {
-    protected Driver $driver;
+    private Driver $driver;
+    private Google $google;
+
+
+    public function google( array $config = [] ): Google
+    {
+        if (!isset($this->google))
+        {
+            $config = array_replace(config('analytics-bridge.google', []), $config);
+            $this->google = new Google($config);
+        }
+
+        return $this->google;
+    }
 
 
     public function driver(string $name = null, array $config = []): Driver
@@ -25,7 +35,6 @@ class Manager implements Driver
             }
 
             $config = array_replace(config('analytics-bridge.drivers.' . $name, []), $config);
-
             $this->driver = new $class($config);
         }
 
@@ -39,183 +48,26 @@ class Manager implements Driver
     }
 
 
-    public function pagespeed(string $url, array $config = []): ?array
+    public function pagespeed(string $url): ?array
     {
-        if (!$url) {
-            throw new \InvalidArgumentException('URL must be a non-empty string');
-        }
-
-        $config = array_replace(config('analytics-bridge.crux', []), $config);
-
-        if (!isset($config['apikey'])) {
-            return null;
-        }
-
-        $payload = ['url' => $url];
-
-        if (isset($config['formFactor'])) {
-            $payload['formFactor'] = $config['formFactor'];
-        }
-
-        $endpoint = 'https://chromeuxreport.googleapis.com/v1/records:queryRecord';
-        $response = Http::post($endpoint . '?key=' . $config['apikey'], $payload);
-
-        if ($response->failed()) {
-            throw new \RuntimeException('Failed to fetch CrUX data: ' . $response->body());
-        }
-
-        $metrics = data_get($response->json(), 'record.metrics', []);
-
-        return collect($metrics)
-            ->map(fn($item, $key) => [
-                'key' => !strncmp($key, 'experimental_', 13) ? substr($key, 13) : $key,
-                'value' => $item['percentiles']['p75'] ?? null
-            ])
-            ->values()
-            ->all();
+        return $this->google()->pagespeed($url);
     }
 
 
-    public function indexed(string $url, string $lang = 'en', array $config = []): ?string
+    public function indexed(string $url, string $lang = 'en'): ?array
     {
-        if (!$url) {
-            throw new \InvalidArgumentException('URL must be a non-empty string');
-        }
-
-        $config = array_replace(config('analytics-bridge.gsc', []), $config);
-
-        if (!isset($config['auth'])) {
-            return null;
-        }
-
-        $parts = parse_url($url);
-        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
-        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
-        $siteUrl .= '/';
-
-        $client = new Client();
-        $client->setAuthConfig($config['auth']);
-        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
-
-        $service = new SearchConsole($client);
-        $request = new SearchConsole\InspectUrlIndexRequest([
-            'languageCode' => $lang,
-            'inspectionUrl' => $url,
-            'siteUrl' => $siteUrl,
-        ]);
-
-        $response = $service->urlInspection_index->inspect($request);
-        $result = $response->getInspectionResult();
-        $status = $result->getIndexStatusResult()->getCoverageState();
-
-        return $status;
+        return $this->google()->indexed($url, $lang);
     }
 
 
-    public function search(string $url, int $days = 30, array $config = []): ?array
+    public function search(string $url, int $days = 30): ?array
     {
-        if (!$url) {
-            throw new \InvalidArgumentException('URL must be a non-empty string');
-        }
-
-        $config = array_replace(config('analytics-bridge.gsc', []), $config);
-
-        if (!isset($config['auth'])) {
-            return null;
-        }
-
-        $parts = parse_url($url);
-        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
-        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
-        $siteUrl .= '/';
-
-        $client = new Client();
-        $client->setAuthConfig($config['auth']);
-        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
-
-        $service = new SearchConsole($client);
-        $request = new SearchConsole\SearchAnalyticsQueryRequest([
-            'startDate' => now()->subDays($days)->toDateString(),
-            'endDate' => now()->toDateString(),
-            'dimensions' => ['date'],
-            'dimensionFilterGroups' => [[
-                'groupType' => 'and',
-                'filters' => [
-                    [
-                        'dimension' => 'page',
-                        'operator' => 'equals',
-                        'expression' => $url,
-                    ]
-                ]
-            ]],
-        ]);
-
-        $response = $service->searchanalytics->query($siteUrl, $request);
-        $data = [];
-
-        foreach ($response->getRows() as $row) {
-            $key = $row->getKeys()[0];
-            $data['impressions'][] = ['key' => $key, 'value' => $row->getImpressions()];
-            $data['clicks'][] = ['key' => $key, 'value' => $row->getClicks()];
-            $data['ctrs'][] = ['key' => $key, 'value' => $row->getCtr()];
-        }
-
-        return $data;
+        return $this->google()->search($url, $days);
     }
 
 
-    public function queries(string $url, int $days = 30, array $config = []): ?array
+    public function queries(string $url, int $days = 30): ?array
     {
-        if (!$url) {
-            throw new \InvalidArgumentException('URL must be a non-empty string');
-        }
-
-        $config = array_replace(config('analytics-bridge.gsc', []), $config);
-
-        if (!isset($config['auth'])) {
-            return null;
-        }
-
-        $parts = parse_url($url);
-        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
-        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
-        $siteUrl .= '/';
-
-        $client = new Client();
-        $client->setAuthConfig($config['auth']);
-        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
-
-        $service = new SearchConsole($client);
-        $request = new SearchConsole\SearchAnalyticsQueryRequest([
-            'startDate' => now()->subDays($days)->toDateString(),
-            'endDate' => now()->toDateString(),
-            'dimensions' => ['query'], // Top queries
-            'dimensionFilterGroups' => [[
-                'groupType' => 'and',
-                'filters' => [
-                    [
-                        'dimension' => 'page',
-                        'operator' => 'equals',
-                        'expression' => $url,
-                    ]
-                ]
-            ]],
-            'rowLimit' => 100
-        ]);
-
-        $response = $service->searchanalytics->query($siteUrl, $request);
-        $data = [];
-
-        foreach ($response->getRows() as $row) {
-            $data[] = [
-                'key' => $row->getKeys()[0],
-                'impressions' => $row->getImpressions(),
-                'clicks' => $row->getClicks(),
-                'ctr' => $row->getCtr(),
-                'position' => $row->getPosition()
-            ];
-        }
-
-        return $data;
+        return $this->google()->queries($url, $days);
     }
 }

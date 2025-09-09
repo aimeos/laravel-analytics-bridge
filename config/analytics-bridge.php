@@ -11,11 +11,10 @@ return [
         ]
     ],
 
-    'crux' => [
-        'apikey' => env('CRUX_APIKEY'),
-    ],
-
-    'gsc' => [
-        'auth' => json_decode(base64_decode(env('GSC_AUTH', '')), true)
+    'google' => [
+        'auth' => json_decode(base64_decode(env('GOOGLE_AUTH', '')), true),
+        'crux' => [
+            'apikey' => env('CRUX_API_KEY'),
+        ]
     ]
 ];
