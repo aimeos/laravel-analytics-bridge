@@ -78,6 +78,7 @@ Available are:
 * durations
 * countries
 * referrers
+* referrertypes
 
 ```php
 $result = Analytics::stats('https://aimeos.org/features', 30);
@@ -113,6 +114,11 @@ It returns arrays with one entry per day, country or URL:
     'referrers' => [
         ['key' => 'https://aimeos.org/', 'value' => 321],
         ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
+        ...
+    ],
+    'referrertypes' => [
+        ['key' => 'Direct entry', 'value' => 243],
+        ['key' => 'Website', 'value' => 199],
         ...
     ],
 ]
@@ -183,6 +189,20 @@ Returns:
     ...
 ```
 
+### Google Index Status
+
+
+```php
+$data = Analytics::indexed('https://aimeos.org/features', 'en-US');
+```
+
+Returns one of:
+
+* "Indexed, URL is on Google"
+* "URL is not on Google: not found (404)"
+* "Crawled - currently not indexed"
+* "Discovered - currently not indexed"
+
 ## Implemnt new Driver
 
 For a new analyics service (e.g. Foobar), create a new composer package, e.g.
@@ -238,6 +258,7 @@ class Foobar implements Driver
             'durations' => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'countries' => [['key' => 'Germany', 'value' => 321], /*...*/],
             'referrers' => [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/],
+            'referrertypes' => [['key' => 'Direct entry', 'value' => 123], /*...*/],
         ];
     }
 }

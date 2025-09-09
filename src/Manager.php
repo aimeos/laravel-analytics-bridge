@@ -76,6 +76,41 @@ class Manager implements Driver
     }
 
 
+    public function indexed(string $url, string $lang = 'en', array $config = []): ?string
+    {
+        if (!$url) {
+            throw new \InvalidArgumentException('URL must be a non-empty string');
+        }
+
+        $config = array_replace(config('analytics-bridge.gsc', []), $config);
+
+        if (!isset($config['auth'])) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        $siteUrl = $parts['scheme'] . '://' . $parts['host'];
+        $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
+        $siteUrl .= '/';
+
+        $client = new Client();
+        $client->setAuthConfig($config['auth']);
+        $client->addScope('https://www.googleapis.com/auth/webmasters.readonly');
+
+        $request = new InspectUrlIndexRequest([
+            'languageCode' => $lang,
+            'inspectionUrl' => $url,
+            'siteUrl' => $siteUrl,
+        ]);
+
+        $response = $service->urlInspection_index->inspect($request);
+        $result = $response->getInspectionResult();
+        $status = $result->getIndexStatusResult()->getCoverageState();
+
+        return $status;
+    }
+
+
     public function search(string $url, int $days = 30, array $config = []): ?array
     {
         if (!$url) {
