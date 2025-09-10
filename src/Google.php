@@ -48,7 +48,7 @@ class Google
         $response = Http::post($endpoint . '?key=' . $this->crux['apikey'], $payload);
 
         if ($response->failed()) {
-            throw new \RuntimeException('Failed to fetch CrUX data: ' . $response->body());
+            throw new \RuntimeException($response->body());
         }
 
         $metrics = data_get($response->json(), 'record.metrics', []);

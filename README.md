@@ -77,7 +77,6 @@ Available are:
 * durations
 * countries
 * referrers
-* referrertypes
 
 ```php
 $result = Analytics::stats('https://aimeos.org/features', 30);
@@ -111,13 +110,12 @@ It returns arrays with one entry per day, country or URL:
         ...
     ],
     'referrers' => [
-        ['key' => 'https://aimeos.org/', 'value' => 321],
-        ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
-        ...
-    ],
-    'referrertypes' => [
-        ['key' => 'Direct entry', 'value' => 243],
-        ['key' => 'Website', 'value' => 199],
+        ['key' => 'Direct entry', 'value' => 243, 'rows' => []],
+        ['key' => 'Website', 'value' => 199, 'rows' => [
+            ['key' => 'https://aimeos.org/', 'value' => 321],
+            ['key' => 'https://aimeos.org/Laravel', 'value' => 244],
+            ...
+        ]],
         ...
     ],
 ]
@@ -187,20 +185,6 @@ Returns:
     ['key' => 'laravel ecommerce', 'impressions' => 2486, 'clicks' => 299, 'ctr' => 0.11, 'position' => 1.9],
     ...
 ```
-
-### Google Index Status
-
-
-```php
-$data = Analytics::indexed('https://aimeos.org/features', 'en-US');
-```
-
-Returns one of:
-
-* "Indexed, URL is on Google"
-* "URL is not on Google: not found (404)"
-* "Crawled - currently not indexed"
-* "Discovered - currently not indexed"
 
 ## Implemnt new Driver
 
