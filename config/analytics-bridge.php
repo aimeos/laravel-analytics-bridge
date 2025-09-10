@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'default' => env('ANALYTICS_DRIVER', 'matomo'),
+    'default' => env('ANALYTICS_DRIVER', 'none'),
 
     'drivers' => [
         'matomo' => [

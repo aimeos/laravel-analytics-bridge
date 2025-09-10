@@ -13,7 +13,6 @@
   "require": {
     "php": "^8.2",
     "illuminate/support": "^11.0||^12.0",
-    "aimeos/laravel-analytics-driver": "*",
     "google/apiclient": "^2.0"
   },
   "extra": {
