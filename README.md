@@ -74,6 +74,7 @@ Available are:
 
 * views
 * visits
+* conversions
 * durations
 * countries
 * referrers
@@ -97,6 +98,11 @@ It returns arrays with one entry per day, country or URL:
     'visits'    => [
         ['key' => '2025-08-01', 'value' => 53],
         ['key' => '2025-08-02', 'value' => 40],
+        ...
+    ],
+    'conversions' => [
+        ['key' => '2025-08-01', 'value' => 15],
+        ['key' => '2025-08-02', 'value' => 10],
         ...
     ],
     'durations' => [ // in seconds
@@ -186,6 +192,19 @@ Returns:
     ...
 ```
 
+### Google Index Status
+
+```php
+$data = Analytics::indexed('https://aimeos.org/features', 'en-US');
+```
+
+Returns something like:
+
+* "Indexed"
+* "Not found"
+* "Crawled"
+* "Discovered"
+
 ## Implemnt new Driver
 
 For a new analyics service (e.g. Foobar), create a new composer package, e.g.
@@ -270,6 +289,31 @@ Register your driver in `config/analytics-bridge.php`, e.g.:
     ]
 ],
 ```
+
+## Optimize
+
+The `google/apiclient` package contains classes for all Google APIs (currently
+over 300) but only two (SearchConsole and WebIndex) are required. To install
+only the required ones, insert this into your `composer.json` at the correct
+places:
+
+```json
+    "scripts": {
+        "pre-autoload-dump": [
+            "Google\\Task\\Composer::cleanup"
+        ],
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "SearchConsole",
+            "WebIndex"
+        ]
+    },
+```
+
+When you run `composer update` afterwards, this will remove the unused services.
+Take a look into the [Google client README](https://github.com/googleapis/google-api-php-client#installation)
+for details.
 
 ## License
 
