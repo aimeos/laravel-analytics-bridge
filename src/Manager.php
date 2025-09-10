@@ -42,9 +42,15 @@ class Manager implements Driver
     }
 
 
-    public function stats(string $url, int $days = 30, array $types = []): ?array
+    public function stats(string $url, int $days = 30): ?array
     {
-        return $this->driver()->stats($url, $days, $types);
+        return $this->driver()->stats($url, $days);
+    }
+
+
+    public function types(array $types): Driver
+    {
+        return $this->driver()->types($types);
     }
 
 

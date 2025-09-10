@@ -82,7 +82,7 @@ Available are:
 $result = Analytics::stats('https://aimeos.org/features', 30);
 
 // to limit the result set
-$result = Analytics::stats('https://aimeos.org/features', 30, ['visits', 'referrers']);
+$result = Analytics::types(['visits', 'referrers'])->stats('https://aimeos.org/features', 30);
 ```
 
 It returns arrays with one entry per day, country or URL:
@@ -227,22 +227,29 @@ use Aimeos\AnalyticsBridge\Contracts\Driver;
 
 class Foobar implements Driver
 {
+    private array $types = ['views', 'visits', 'durations', 'conversions', 'countries', 'referrers'];
+
     public function __construct(array $config = [])
     {
         // $config from ./config/analytics-bridge.php
     }
 
-    public function stats(string $path, int $days = 30, array $types = []): ?array
+    public function stats(string $path, int $days = 30): ?array
     {
-        // limited by types if requested, or NULL if not available
+        // limit by types if requested
         return [
             'views'     => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'visits'    => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'durations' => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'countries' => [['key' => 'Germany', 'value' => 321], /*...*/],
             'referrers' => [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/],
-            'referrertypes' => [['key' => 'Direct entry', 'value' => 123], /*...*/],
         ];
+    }
+
+    public function types(array $types): Driver
+    {
+        $this->types = $types;
+        return $this;
     }
 }
 ```
