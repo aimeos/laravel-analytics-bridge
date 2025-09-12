@@ -20,6 +20,8 @@ Install the driver package you need:
 composer require aimeos/laravel-analytics-matomo
 # for Google Analytics
 composer require aimeos/laravel-analytics-google
+# for Cloudflare Web Analytics
+composer require aimeos/laravel-analytics-cloudflare
 ```
 
 ## Configuration
@@ -34,14 +36,17 @@ This creates the `./config/analytics-bridge.php` file:
 
 ```php
 return [
-    'default' => env('ANALYTICS_DRIVER', 'matomo'),
+    'default' => env('ANALYTICS_DRIVER'),
 
     'drivers' => [
-        'google' => [
+        'cloudflare' => [
+            'siteTag' => env('CLOUDFLARE_SITETAG'),
+            'token' => env('CLOUDFLARE_TOKEN'),
+        ],
+        'ga4' => [
             'propertyid' => env('GOOGLE_PROPERTYID'),
             'credentials' => json_decode(base64_decode(env('GOOGLE_AUTH', '')), true),
         ],
-
         'matomo' => [
             'url' => env('MATOMO_URL'),
             'token' => env('MATOMO_TOKEN'),
@@ -58,7 +63,16 @@ return [
 ];
 ```
 
-Set your .env accordingly.
+Set your .env variables accordingly and don't forget to configure the
+`ANALYTICS_DRIVER` value using the name of the driver ("cloudflare",
+"google", or "matomo").
+
+The value of `GOOGLE_AUTH` must be the string from the **Service Account JSON
+key file** encoded as base64. To do the encoding on the command line, use:
+
+```bash
+php -r 'echo base64_encode(file_get_contents("name-xxxxxxxxxxxx.json"));'
+```
 
 ## API Usage
 
@@ -227,9 +241,6 @@ Use this `composer.json` as template:
   "require": {
     "php": "^8.1",
     "aimeos/laravel-analytics-bridge": "~1.0"
-  },
-  "provide": {
-    "aimeos/laravel-analytics-driver": "*"
   }
 }
 ```
@@ -305,8 +316,7 @@ places:
     },
     "extra": {
         "google/apiclient-services": [
-            "SearchConsole",
-            "WebIndex"
+            "SearchConsole"
         ]
     },
 ```
