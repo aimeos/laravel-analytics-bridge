@@ -31,7 +31,7 @@ class Manager implements Driver
             $class = '\\Aimeos\\AnalyticsBridge\\Drivers\\' . ucfirst($name);
 
             if (!class_exists($class)) {
-                throw new InvalidArgumentException("Driver [$name] not found");
+                throw new \InvalidArgumentException("Driver [$name] not found");
             }
 
             $config = array_replace(config('analytics-bridge.drivers.' . $name, []), $config);
