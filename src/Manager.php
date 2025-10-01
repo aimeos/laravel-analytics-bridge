@@ -11,7 +11,7 @@ class Manager implements Driver
     private Google $google;
 
 
-    public function google( array $config = [] ): Google
+    public function google(array $config = []): Google
     {
         if (!isset($this->google))
         {
@@ -23,7 +23,7 @@ class Manager implements Driver
     }
 
 
-    public function driver(string $name = null, array $config = []): Driver
+    public function driver(?string $name = null, array $config = []): Driver
     {
         if (!isset($this->driver))
         {
