@@ -48,7 +48,10 @@ class Google
         $response = Http::post($endpoint . '?key=' . $this->crux['apikey'], $payload);
 
         if ($response->failed()) {
-            throw new \RuntimeException($response->body());
+            if ($response->body() === 'chrome ux report data not found') {
+                throw new \RuntimeException($response->body());
+            }
+            return null;
         }
 
         $metrics = data_get($response->json(), 'record.metrics', []);
