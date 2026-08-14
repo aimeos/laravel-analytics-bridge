@@ -175,6 +175,11 @@ class Google
     protected function siteUrl(string $url): string
     {
         $parts = parse_url($url);
+
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
+            throw new \InvalidArgumentException('URL must be an absolute URL');
+        }
+
         $siteUrl = $parts['scheme'] . '://' . $parts['host'];
         $siteUrl .= isset($parts['port']) ? ':' . $parts['port'] : '';
         $siteUrl .= '/';
