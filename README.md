@@ -92,6 +92,7 @@ Available are:
 * durations
 * countries
 * referrers
+* links
 
 ```php
 $result = Analytics::stats('https://aimeos.org/features', 30);
@@ -100,7 +101,7 @@ $result = Analytics::stats('https://aimeos.org/features', 30);
 $result = Analytics::types(['visits', 'referrers'])->stats('https://aimeos.org/features', 30);
 ```
 
-It returns arrays with one entry per day, country or URL:
+It returns arrays with one entry per day, country, referrer or link target:
 
 ```php
 [
@@ -138,8 +139,19 @@ It returns arrays with one entry per day, country or URL:
         ]],
         ...
     ],
+    'links' => [ // pages visited next, outbound clicks and downloads
+        ['key' => 'aimeos.org/docs/latest/setup', 'value' => 37],
+        ['key' => 'https://github.com/aimeos/aimeos', 'value' => 12],
+        ...
+    ],
 ]
 ```
+
+The `links` counts are derived from the page following the current one and from outbound/download clicks tracked by the analytics service. They are counted per target URL, so several links to the same target on a page are combined:
+
+* Matomo: Transitions report (outlinks and downloads require `enableLinkTracking`)
+* GA4: page views with the page as referrer plus `click` and `file_download` events from enhanced measurement
+* Cloudflare: HTML requests with the page as referrer (no outbound clicks or downloads)
 
 ### PageSpeed Metrics
 
@@ -257,7 +269,7 @@ use Aimeos\AnalyticsBridge\Contracts\Driver;
 
 class Foobar implements Driver
 {
-    private array $types = ['views', 'visits', 'durations', 'conversions', 'countries', 'referrers'];
+    private array $types = ['views', 'visits', 'durations', 'conversions', 'countries', 'referrers', 'links'];
 
     public function __construct(array $config = [])
     {
@@ -273,6 +285,7 @@ class Foobar implements Driver
             'durations' => [['key' => '2025-08-01', 'value' => 123], /*...*/],
             'countries' => [['key' => 'Germany', 'value' => 321], /*...*/],
             'referrers' => [['key' => 'https://aimeos.org/', 'value' => 321], /*...*/],
+            'links'     => [['key' => 'aimeos.org/features', 'value' => 42], /*...*/],
         ];
     }
 
